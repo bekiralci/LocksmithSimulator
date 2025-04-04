@@ -73,7 +73,6 @@ public class PlayerLook : MonoBehaviour
             if (rightClickListener != null)
             {
                 rightClickListener.OnRightClick();
-                Debug.Log("Sað týklama: " + hit.collider.name);
             }
             else
             {

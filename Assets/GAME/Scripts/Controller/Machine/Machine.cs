@@ -11,6 +11,7 @@ public class Machine : MonoBehaviour, ILeftClickListener, IRightClickListener
     [SerializeField] private Item originalObject;
     [SerializeField] private Item newObject;
     private bool isOperating = false; // Makine çalýþýyor mu kontrolü
+    private bool machineWorked = false; // Makine çalýþýyor mu kontrolü
 
     // Ses efektleri (þu anda yorum satýrýna alýndý)
     // [Header("Ses Efektleri")]
@@ -28,7 +29,6 @@ public class Machine : MonoBehaviour, ILeftClickListener, IRightClickListener
 
     public bool AddObject()
     {
-
         if (isOperating)
         {
             Debug.LogWarning("[Makine] Makine çalýþýrken obje eklenemez!");
@@ -37,50 +37,44 @@ public class Machine : MonoBehaviour, ILeftClickListener, IRightClickListener
 
         Item obj = InventorySystem.Instance.GetSelectedSlot().GetItemForInfo();
 
-        if (obj == null)
+        if (obj == null || obj is not Key key)
         {
-            print("obj is null");
+            Debug.Log("Obj null ya da key deðil.");
             return false;
         }
-        if (obj is Key key)
+
+        if (key.isOriginal)
         {
-
-            if (key.isOriginal)
-            {
-                if (originalObject == null)
-                {
-                    obj = InventorySystem.Instance.GetSelectedSlot().GetItemForUse();
-                    originalObject = obj;
-                    PlaceObject(obj, originalObjectTransform);
-                    obj.gameObject.SetActive(true);
-                    Debug.Log("[Makine] Orijinal obje baþarýyla eklendi.");
-                    return true;
-                }
-            }
-            else if (!key.isOriginal)
-            {
-                print("new object ");
-                if (originalObject == null)
-                {
-                    print("original object is null");
-                    return false;
-                }
-                obj = InventorySystem.Instance.GetSelectedSlot().GetItemForUse();
-                newObject = obj;
-                PlaceObject(obj, newObjectTransform);
-                newObject.gameObject.SetActive(true);
-                Debug.Log("[Makine] Yeni obje baþarýyla eklendi.");
-                return true;
-            }
-
+            return TrySetObject(ref originalObject, originalObjectTransform, "[Makine] Orijinal obje baþarýyla eklendi.");
         }
-
-        // Eðer her iki obje de doluysa ekleme yapýlamaz
-        Debug.LogWarning("[Makine] Makine zaten dolu! Daha fazla obje eklenemez.");
-        return false;
+        else
+        {
+            if (originalObject == null)
+            {
+                Debug.Log("Orijinal obje eklenmeden yeni obje eklenemez.");
+                return false;
+            }
+            return TrySetObject(ref newObject, newObjectTransform, "[Makine] Yeni obje baþarýyla eklendi.");
+        }
     }
+
+    private bool TrySetObject(ref Item targetSlot, Transform targetTransform, string successMessage)
+    {
+        if (targetSlot != null) return false;
+
+        Item obj = InventorySystem.Instance.GetSelectedSlot().GetItemForUse();
+        targetSlot = obj;
+        PlaceObject(obj, targetTransform);
+        obj.gameObject.SetActive(true);
+        Debug.Log(successMessage);
+        return true;
+    }
+
     public bool RemoveObject()
     {
+        if (machineWorked)
+            return RemoveBothObjects();
+
         if (isOperating)
         {
             Debug.LogWarning("[Makine] Makine çalýþýrken obje çýkarýlamaz!");
@@ -88,25 +82,39 @@ public class Machine : MonoBehaviour, ILeftClickListener, IRightClickListener
         }
 
         if (newObject != null)
-        {
-            Destroy(newObject);
-            newObject = null;
-            Debug.Log("[Makine] Yeni obje çýkarýldý.");
-            return true;
-        }
+            return RemoveSingleObject(ref newObject, "Yeni obje çýkarýldý.");
 
         if (originalObject != null)
-        {
-            Destroy(originalObject);
-            originalObject = null;
-            Debug.Log("[Makine] Orijinal obje çýkarýldý.");
-            return true;
-        }
+            return RemoveSingleObject(ref originalObject, "Orijinal obje çýkarýldý.");
 
         Debug.LogWarning("[Makine] Makinede çýkarýlacak obje bulunmuyor!");
         return false;
     }
 
+    private bool RemoveBothObjects()
+    {
+        AddItemToInventory(originalObject);
+        AddItemToInventory(newObject);
+        ResetMachine();
+        Debug.Log("[Makine] Tüm objeler çýkarýldý.");
+        return true;
+    }
+
+    private bool RemoveSingleObject(ref Item item, string message)
+    {
+        AddItemToInventory(item);
+        item = null;
+        Debug.Log($"[Makine] {message}");
+        return true;
+    }
+
+    private void AddItemToInventory(Item item)
+    {
+        if (item != null)
+        {
+            InventorySystem.Instance.AddItem(item, 1);
+        }
+    }
 
     // Sol týklama iþlemi (objeyi ekleme)
     public void OnLeftClick()
@@ -151,11 +159,12 @@ public class Machine : MonoBehaviour, ILeftClickListener, IRightClickListener
         Debug.Log("[Makine] Makine çalýþmaya baþladý. Süre: " + operationTime + " saniye");
         yield return new WaitForSeconds(operationTime);
 
-        Destroy(newObject);
+        Destroy(newObject.gameObject);
         newObject = Instantiate(originalObject, newObjectTransform.position, newObjectTransform.rotation);
         // PlaySound(operationFinishedSound); // Makine tamamlandýðýnda ses çal
         Debug.Log("[Makine] Makine çalýþtýrýldý: Yeni obje, orijinal objenin klonuyla deðiþtirildi.");
 
+        machineWorked = true;
         isOperating = false;
     }
 
@@ -165,7 +174,7 @@ public class Machine : MonoBehaviour, ILeftClickListener, IRightClickListener
         originalObject = null;
         newObject = null;
         isOperating = false;
-        Debug.Log("[Makine] Makine sýfýrlandý.");
+        machineWorked = false;
     }
 }
 

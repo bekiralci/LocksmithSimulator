@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class SlotManager : MonoBehaviour
 {
     private GameObject slotPrefab;
-    private Transform hotbarPanel;
+    public Transform hotbarPanel;
     public Dictionary<int, InventorySlot> SlotDictionary = new Dictionary<int, InventorySlot>();
     private int selectedSlotIndex = 0;
     private Image highlightIcon;
@@ -14,7 +14,6 @@ public class SlotManager : MonoBehaviour
 
     public int SelectedSlotIndex => selectedSlotIndex;
 
-    // Constructor kaldýrýldý, parametreler Initialize ile alýnacak.
     public void Initialize(GameObject slotPrefab, Transform hotbarPanel, int slotCount, Image highlightIcon)
     {
         this.slotPrefab = slotPrefab;
@@ -28,6 +27,9 @@ public class SlotManager : MonoBehaviour
         float slotWidth = slotPrefab.GetComponent<RectTransform>().rect.width;
         float slotSpacing = 10f;
 
+        float totalWidth = SlotCount * slotWidth + (SlotCount - 1) * slotSpacing;
+        float startX = -totalWidth / 2 + slotWidth / 2;
+
         for (int i = 0; i < SlotCount; i++)
         {
             GameObject newSlot = Instantiate(slotPrefab, hotbarPanel);
@@ -35,11 +37,14 @@ public class SlotManager : MonoBehaviour
             slotComponent.InitializeSlot(i);
 
             RectTransform slotRectTransform = newSlot.GetComponent<RectTransform>();
-            slotRectTransform.anchoredPosition = new Vector2(i * (slotWidth + slotSpacing), 0);
+            slotRectTransform.SetParent(transform, false);
+            float xPosition = startX + i * (slotWidth + slotSpacing);
+            slotRectTransform.anchoredPosition = new Vector2(xPosition, 0);
 
             SlotDictionary.Add(i, slotComponent);
         }
     }
+
 
     public void UpdateSlotSelection()
     {

@@ -2,6 +2,8 @@ public class ItemManager
 {
     public void AddItemToInventory(Item newItem, int amount, SlotManager slotManager)
     {
+
+        newItem.gameObject.SetActive(false); // Yeni eþyayý gizle
         foreach (var slot in slotManager.SlotDictionary.Values)
         {
             if (slot.CanStackItem(newItem))
@@ -19,5 +21,4 @@ public class ItemManager
             }
         }
     }
-
 }

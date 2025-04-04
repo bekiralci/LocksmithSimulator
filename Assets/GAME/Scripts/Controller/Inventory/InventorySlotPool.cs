@@ -22,4 +22,9 @@ public class InventorySlotPool : MonoBehaviour
         obj.gameObject.SetActive(false);
         objectPool.Add(obj);
     }
+
+    public int Count()
+    {
+        return objectPool.Count;
+    }
 }

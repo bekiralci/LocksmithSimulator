@@ -33,7 +33,7 @@ public class InventorySlot : MonoBehaviour
         ClearSlot(); // Slotu baþlatýrken boþ hale getir
     }
 
-    public bool HasItem() => item != null;
+    public bool HasItem() => slotPool.Count() > 0;
     public bool IsEmpty() => item == null;
 
     public bool CanStackItem(Item newItem)
@@ -77,7 +77,10 @@ public class InventorySlot : MonoBehaviour
     {
         if (HasItem() && item.canBeUsed)
         {
-            return slotPool.GetObjectFromPool();
+            Item item = slotPool.GetObjectFromPool();
+            itemCount--;
+            UpdateSlot();
+            return item;
         }
         return null;
     }
@@ -86,6 +89,8 @@ public class InventorySlot : MonoBehaviour
     {
         if (HasItem()) // Eðer slotta eþya varsa
         {
+
+
             // Eþya ikonunu ve miktarýný güncelle
             if (itemIcon != null)
             {
@@ -108,7 +113,6 @@ public class InventorySlot : MonoBehaviour
         }
         else // Eðer slot boþsa
         {
-            // Slot boþsa, ikonu ve miktarý gizle
             if (itemIcon != null)
             {
                 itemIcon.gameObject.SetActive(false);
