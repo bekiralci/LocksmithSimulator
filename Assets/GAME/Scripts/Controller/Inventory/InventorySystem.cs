@@ -57,4 +57,8 @@ public class InventorySystem : MonoBehaviour
     {
         return slotManager.GetSelectedSlot();
     }
+
+
+
+
 }

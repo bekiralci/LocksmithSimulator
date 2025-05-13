@@ -38,7 +38,7 @@ public class InventorySlot : MonoBehaviour
 
     public bool CanStackItem(Item newItem)
     {
-        return HasItem() && item.itemID == newItem.itemID && item.itemType == newItem.itemType && itemCount < maxStackSize;
+        return HasItem() && item.ItemID == newItem.ItemID && item.Type == newItem.Type && itemCount < maxStackSize;
     }
 
     public int StackItem(Item handleItem, int amount)

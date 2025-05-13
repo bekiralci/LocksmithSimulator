@@ -17,7 +17,7 @@ public class NailStack : MonoBehaviour, IRightClickListener, ILeftClickListener
         }
 
         Item itemToUse = InventorySystem.Instance.GetSelectedSlot()?.GetItemForUse();
-        if ((key.itemID == itemID || objectStack.Count == 0) && objectStack.Count < maxStackSize)
+        if ((key.ItemID == itemID || objectStack.Count == 0) && objectStack.Count < maxStackSize)
         {
             AddObjectToNail(itemToUse);
         }
@@ -38,7 +38,7 @@ public class NailStack : MonoBehaviour, IRightClickListener, ILeftClickListener
 
         if (objectStack.Count == 0)
         {
-            itemID = item.itemID;
+            itemID = item.ItemID;
         }
 
         objectStack.Push(item);
